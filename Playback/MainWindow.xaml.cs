@@ -25,7 +25,7 @@ namespace Playback
     public partial class MainWindow : Window
     {
         private Mp3FileReader reader;
-        private WaveOut output;
+        private WaveOutEvent output;
         DispatcherTimer timer;
         bool dragging = false;
 
@@ -80,7 +80,7 @@ namespace Playback
         {
             if(output != null && output.PlaybackState == PlaybackState.Paused)
             {
-                output.Resume();
+                output.Play();
                 btnplay.IsEnabled = false;
                 btnPause.IsEnabled = true;
                 btnstop.IsEnabled = true;
@@ -89,9 +89,16 @@ namespace Playback
             {
                 if (txtruta.Text != null && txtruta.Text != "")
                 {
-                    output = new WaveOut();
+                    output = new WaveOutEvent();
                     output.PlaybackStopped += OnPlaybackStop;
                     reader = new Mp3FileReader(txtruta.Text);
+
+                    //Configuraciones de WaveOut
+                    output.DeviceNumber = cbDispositivos.SelectedIndex;
+                    output.NumberOfBuffers = 2;
+                    output.DesiredLatency = 100;
+
+                    output.Volume = (float)sldVolumen.Value;
 
                     output.Init(reader);
                     output.Play();
@@ -163,6 +170,14 @@ namespace Playback
                     btnstop.IsEnabled = false;
                     btnplay.IsEnabled = true;
                 }
+            }
+        }
+
+        private void sldVolumen_DragCompleted(object sender, RoutedEventArgs e)
+        {
+            if(output != null)
+            {
+                output.Volume = (float)sldVolumen.Value;
             }
         }
     }
